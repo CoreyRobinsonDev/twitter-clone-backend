@@ -1,0 +1,56 @@
+
+db = {
+  users: [
+    {
+      id: "",
+      name: "",
+      username: "",
+      profile_photo: "",
+      banner_photo: "",
+      bio: "",
+      num_tweets: 0,
+      num_followers: 0,
+      num_following: 0,
+      date_acc_created: 0,
+      messages: [
+        {
+          user_session: "",
+          content: [
+            {
+              from: "",
+              text: ""
+            }
+          ]
+
+        }
+      ]
+    },
+  ],
+  posts: [
+    {
+      profile_photo: "",
+      name: "",
+      username: "",
+      title: "",
+      text: "",
+      media: "",
+      num_comments: 0,
+      num_reposts: 0,
+      num_upvotes: 0,
+      num_downvotes: 0,
+      comment_section: [
+        {
+          profile_photo: "",
+          name: "",
+          username: "",
+          replying_to: "",
+          text: "",
+          media: "",
+          num_reposts: 0,
+          num_upvotes: 0,
+          num_downvotes: 0
+        }
+      ]
+    }
+  ]
+}

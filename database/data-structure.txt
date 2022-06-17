@@ -1,0 +1,60 @@
+users 
+  id INTEGER
+  username TEXT
+  password TEXT
+  profile_photo TEXT
+  banner_photo TEXT
+  bio TEXT
+  num_tweets INTEGER
+  num_followers INTEGER
+  num_following INTEGER
+  date_acc_created NUMERIC
+  
+  PRIMARY KEY(id)
+
+
+posts
+  id INTEGER
+  poster_id INTEGER
+  text TEXT
+  media TEXT
+  num_comments INTEGER
+  num_upvotes INTEGER
+  num_downvotes INTEGER
+  num_reposts INTEGER
+
+  PRIMARY KEY(id)
+  FOREIGN KEY(poster_id) REFERENCES users(id)
+
+
+comment_section
+  id INTEGER
+  poster_id INTEGER
+  post_id INTEGER
+  text TEXT
+  media TEXT
+  num_upvotes INTEGER
+  num_downvotes INTEGER
+  num_reposts INTEGER
+
+  PRIMARY KEY(id)
+  FOREIGN KEY(poster_id) REFERENCES users(id)
+  FOREIGN KEY(post_id) REFERENCES posts(id)
+
+
+bookmarks
+  user_id INTEGER
+  post_id INTEGER
+
+  FOREIGN KEY(user_id) REFERENCES users(id)
+  FOREIGN KEY(post_id) REFERENCES posts(id)
+
+
+likes
+  user_id INTEGER
+  post_id INTEGER
+
+  FOREIGN KEY(user_id) REFERENCES users(id)
+  FOREIGN KEY(post_id) REFERENCES posts(id)
+
+messages

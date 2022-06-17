@@ -11,6 +11,8 @@
   "license": "ISC",
   "dependencies": {
     "axios": "^0.27.2",
-    "nodemon": "^2.0.16"
+    "bcrypt": "^5.0.1",
+    "nodemon": "^2.0.16",
+    "sqlite3": "^5.0.8"
   }
 }

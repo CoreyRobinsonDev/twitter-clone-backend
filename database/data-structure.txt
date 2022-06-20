@@ -58,4 +58,31 @@ likes
   FOREIGN KEY(user_id) REFERENCES users(id)
   FOREIGN KEY(post_id) REFERENCES posts(id)
 
+
+notifications
+
+
+followers
+  user_id INTEGER
+  follower_id INTEGER
+
+  FOREIGN KEY(user_id) REFERENCES users(id)
+  FOREIGN KEY(follower_id) REFERENCES users(id)
+
+
 messages
+  conversation_id INTEGER
+  content TEXT
+  time NUMERIC
+
+  FOREIGN KEY(conversation_id) REFERENCES conversations(id)
+
+
+conversations
+  id INTEGER
+  sender_id INTEGER
+  receiver_id INTEGER
+
+  PRIMARY KEY(id)
+  FOREIGN KEY(sender_id) REFERENCES users(id)
+  FOREIGN KEY(receiver_id) REFERENCES users(id)

@@ -6,20 +6,18 @@ const passport = require("passport");
 const cookieParser = require("cookie-parser");
 const bcrypt = require("bcrypt");
 const session = require("express-session");
-const bodyParser = require("body-parser");
 
 const PORT = 4001;
 
 // Middleware
 app.use(cors({origin: "http://localhost:3000", credentials: true}))
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.json());
 app.use(session({
   secret: "secretcode",
   resave: true,
   saveUninitialized: true
 }));
-app.use(cookieParser("secretcode"));
+app.use(cookieParser());
 app.use(passport.initialize());
 app.use(passport.session());
 require("./util/passportConfig")(passport);
@@ -45,21 +43,24 @@ app.get("/", (req, res) => {
 
 app.post("/register", async (req, res) => {
   const { password, confirmPassword } = req.body;
-  const username = req.body.username.trim().toUpperCase();
+  const username = req.body.username.trim();
   const db = new sqlite3.Database("./database/bitter.db", sqlite3.OPEN_READWRITE, (err) => {
     if (err) return console.error(err.message);
   })
 
   db.all("SELECT * FROM users WHERE username = ?", [username], (err, row) => {
     if (err) console.log(err);
-    if (err) return res.status(500).send("Server Error");
+    if (err)  return res.status(500).send("Server Error");
     if (row.length > 0) return res.status(404).send("User Already Exists");
   })
 
-  if (password !== confirmPassword) return res.status(403).send("Password doesn't Match Confirmed Password")
-
+  
   const hash = await bcrypt.hash(password, 10);
   const date = new Date().toLocaleDateString("en-US");
+  
+  // Checks if a error occured in the database lookup and exits the function
+  if (res.statusCode !== 200) return
+  if (password !== confirmPassword) return res.status(403).send("Passwords Don't Match")
   
   db.run("INSERT INTO users (username, password, num_tweets, num_followers, num_following, date_acc_created) VALUES(?, ?, ?, ?, ?, ?)", [username, hash, 0, 0, 0, date], (err) => {
     if (err) {
@@ -74,25 +75,14 @@ app.post("/register", async (req, res) => {
     if (err) return console.error(err)
   })
 })
+  
 
-
-app.post("/login", (req, res, next) => {
-  passport.authenticate("local", (err, user, info) => {
-    if (err) throw err;
-    if (!user) {
-      res.status(404).send("No User was Found");
-    } else {
-      req.logIn(user, (err) => {
-        if (err) throw err;
-        res.status(200).send("Successful");
-        console.log(req.user);
-      })
-    }
-
-  })(req, res, next)
+app.post("/login", passport.authenticate("local"), (req, res) => {
+  res.status(200).send(req.user);
+  console.log(req.user);
 })
 
-
+ 
 app.get("/logout", (req, res) => {
   req.logout();
 })

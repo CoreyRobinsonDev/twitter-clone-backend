@@ -9,7 +9,7 @@ module.exports = function (passport) {
 
   passport.use(
     new localStrategy((username, password, done) => {
-      db.all("SELECT * FROM users WHERE username = ?", [username.trim().toUpperCase()], (err, row) => {
+      db.all("SELECT * FROM users WHERE username = ?", [username.trim()], (err, row) => {
         if (err) return done(err);
         if (row[0] === undefined) return done(null, false);
         const user = row[0];
@@ -28,13 +28,17 @@ module.exports = function (passport) {
   )
 
   passport.serializeUser((user, done) => {
-    done(null, user.id);
+    process.nextTick(() => {
+      done(null, user.id);
+    })
   })
 
   passport.deserializeUser((id, done) => {
-    db.all("SELECT * FROM users WHERE id = ?", [id], (err, row) => {
-      if (err) return done(err);
-      done(null, row[0])
+    process.nextTick(() => {
+      db.all("SELECT * FROM users WHERE id = ?", [id], (err, row) => {
+        if (err) return done(err);
+        done(null, row[0])
+      })
     })
   })
 

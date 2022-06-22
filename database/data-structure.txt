@@ -1,28 +1,29 @@
 users 
   id INTEGER
-  username TEXT
-  password TEXT
-  profile_photo TEXT
-  banner_photo TEXT
+  username TEXT NOT NULL
+  password TEXT NOT NULL
+  profile_photo TEXT NOT NULL
+  banner_photo TEXT NOT NULL
   bio TEXT
-  num_tweets INTEGER
-  num_followers INTEGER
-  num_following INTEGER
-  date_acc_created NUMERIC (mm/dd/yyyy)
+  num_tweets INTEGER NOT NULL
+  num_followers INTEGER NOT NULL
+  num_following INTEGER NOT NULL
+  date_acc_created NUMERIC NOT NULL (mm/dd/yyyy)
   
   PRIMARY KEY(id)
 
 
 posts
   id INTEGER
-  poster_id INTEGER
+  poster_id INTEGER NOT NULL
   text TEXT
   media TEXT
-  date_post_created NUMERIC (unix timestamp)
-  num_comments INTEGER
-  num_upvotes INTEGER
-  num_downvotes INTEGER
-  num_reposts INTEGER
+  media_content_type TEXT
+  date_post_created NUMERIC NOT NULL (unix timestamp)
+  num_comments INTEGER NOT NULL
+  num_upvotes INTEGER NOT NULL
+  num_downvotes INTEGER NOT NULL
+  num_reposts INTEGER NOT NULL
 
   PRIMARY KEY(id)
   FOREIGN KEY(poster_id) REFERENCES users(id)

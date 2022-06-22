@@ -1,18 +1,7 @@
-const bcrypt = require("bcrypt");
 const axios = require("axios");
+const bcrypt = require("bcrypt");
 
-const generate_password_hash = async (password, salt_rounds = 10) => {
-  try {
-    const salt = await bcrypt.genSalt(salt_rounds);
-    
-    return await bcrypt.hash(password, salt);
-  } catch (err) {
-    console.log(err);
-  }
-  return null;
-}
 
-exports.generate_password_hash = generate_password_hash;
 
 exports.generate_user = async () => {
   const sqlite3 = require("sqlite3").verbose();
@@ -21,13 +10,13 @@ exports.generate_user = async () => {
   })
 
    await axios.get("https://random-data-api.com/api/users/random_user")
-  .then(response => {
+  .then(async (response) => {
     const { username, password, avatar } = response.data;
     const date = new Date().toLocaleDateString("en-US");
+    const hash = await bcrypt.hash(password, 10);
     
-    db.run("INSERT INTO users (username, password, profile_photo, num_tweets, num_followers, num_following, date_acc_created) VALUES (?, ?, ?, ?, ?, ?, ?)", [username, generate_password_hash(password), avatar, 0, 0, 0, date], (err) => {
+    db.run("INSERT INTO users (username, password, profile_photo, num_tweets, num_followers, num_following, date_acc_created, banner_photo) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", [username, hash, avatar, 0, 0, 0, date, "images/default_banner.jpg"], (err) => {
       if (err) return console.error(err);
-
     })
   })
   .catch(error => {

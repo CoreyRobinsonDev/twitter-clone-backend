@@ -43,7 +43,17 @@ router.post("/", upload.single("file"), (req, res) => {
   db.run("INSERT INTO comment_section (poster_id, post_id, text, media, num_upvotes, num_downvotes, num_reposts) VALUES(?, ?, ?, ?, ?, ?, ?)", [poster_id, post_id, text, media, 0, 0, 0], (err) => {
     if (err) return res.status(500).send("Sever Error");
 
-    res.status(201).send("Comment Created")
+    db.all("SELECT num_comments FROM posts WHERE id = ?", [post_id], (err, rows) => {
+      if (err) return res.status(500).send("Sever Error");
+
+      const comments = rows[0].num_comments;
+
+      db.run("UPDATE posts SET num_comments = ? WHERE id = ?", [comments + 1, post_id], (err) => {
+        if (err) return res.status(500).send("Sever Error");
+
+        res.status(201).send("Comment Created");
+      })
+    })
   })
 
   db.close((err) => {

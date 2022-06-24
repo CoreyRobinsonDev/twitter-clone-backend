@@ -102,6 +102,47 @@ router.post("/upvote", (req, res) => {
     if (err) return console.error(err.message);
   })
 
+  const { user_id, post_id } = req.body;
+
+  db.all("SELECT * FROM upvotes WHERE user_id = ? AND post_id = ?", [user_id, post_id], (err, rows) => {
+    if (err) return res.status(500).send("Server Error");
+
+    if (rows.length === 0) {
+      db.run("INSERT INTO upvotes (user_id, post_id) VALUES(?, ?)", [user_id, post_id], (err) => {
+        if (err) return res.status(500).send("Server Error");
+        
+        db.all("SELECT num_upvotes FROM posts WHERE id = ?", [post_id], (err, upvoteRows) => {
+          if (err) return res.status(500).send("Server Error");
+
+          const upvotes = upvoteRows[0].num_upvotes;
+
+          db.run("UPDATE posts SET num_upvotes = ? WHERE id = ?", [upvotes + 1, post_id], (err) => {
+            if (err) return res.status(500).send("Server Error");
+            
+            res.send(true)
+          })
+        })
+      })
+    } else {
+      db.run("DELETE FROM upvotes WHERE user_id = ? AND post_id = ?", [user_id, post_id], (err) => {
+        if (err) return res.status(500).send("Server Error");
+        
+        db.all("SELECT num_upvotes FROM posts WHERE id = ?", [post_id], (err, upvoteRows) => {
+          if (err) return res.status(500).send("Server Error");
+
+          const upvotes = upvoteRows[0].num_upvotes;
+
+          db.run("UPDATE posts SET num_upvotes = ? WHERE id = ?", [upvotes - 1, post_id], (err) => {
+            if (err) return res.status(500).send("Server Error");
+            
+            res.send(false)
+          })
+        })
+      })
+    }
+
+  })
+
   db.close((err) => {
     if (err) return console.error(err)
   })

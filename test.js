@@ -4,9 +4,7 @@ const db = new sqlite3.Database("./database/bitter.db", sqlite3.OPEN_READWRITE, 
 })
 
 
-db.run("CREATE TABLE downvotes (user_id, post_id, FOREIGN KEY(user_id) REFERENCES users(id), FOREIGN KEY(post_id) REFERENCES posts(id))")
-
-
+db.run("UPDATE posts SET num_comments = 0 WHERE id = 103")
 
 
 db.close((err) => {

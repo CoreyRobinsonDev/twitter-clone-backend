@@ -4,7 +4,7 @@ const db = new sqlite3.Database("./database/bitter.db", sqlite3.OPEN_READWRITE, 
 })
 
 
-db.run("CREATE TABLE reposts (user_id INTEGER NOT NULL, post_id INTEGER NOT NULL, FOREIGN KEY(user_id) REFERENCES users(id), FOREIGN KEY(post_id) REFERENCES posts(id))")
+db.run("CREATE TABLE bookmarks (user_id INTEGER NOT NULL, post_id INTEGER, comment_id INTEGER, FOREIGN KEY(user_id) REFERENCES users(id), FOREIGN KEY(post_id) REFERENCES posts(id), FOREIGN KEY(comment_id) REFERENCES comment_section(id))", err => {if  (err) console.error(err)})
 
 
 db.close((err) => {

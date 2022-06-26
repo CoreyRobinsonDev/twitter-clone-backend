@@ -39,13 +39,24 @@ router.post("/", upload.single("file"), (req, res) => {
   const { text, date, poster_id } = req.body;
   const media = req.file ? req.file.path : null;
   const mediaType = req.file ? req.file.mimetype : null;
+ 
   
   db.run("INSERT INTO posts (poster_id, text, media, media_content_type, date_post_created, num_comments, num_upvotes, num_downvotes, num_reposts) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)", [poster_id, text, media, mediaType, date, 0, 0, 0, 0], (err) => {
-    if (err) {
-      console.log(err);
-      return res.status(500).send("Server Error");
-    }
-    res.status(201).send("Post Created");    
+    if (err) return res.status(500).send("Server Error");
+    
+    db.all("SELECT num_tweets FROM users WHERE id = ?", [poster_id], (err, row) => {
+      if (err) return res.status(500).send("Server Error");
+
+      const tweets = row[0].num_tweets;
+
+      db.run("UPDATE users SET num_tweets = ? WHERE id = ?", [tweets + 1, poster_id], (err) => {
+        if (err) return res.status(500).send("Server Error");        
+
+        res.status(201).send("Post Created");    
+      })
+    })
+
+
   })
 
   db.close((err) => {
@@ -79,6 +90,45 @@ router.post("/getPostData", (req, res) => {
 router.post("/repost", (req, res) => {
   const db = new sqlite3.Database("./database/bitter.db", sqlite3.OPEN_READWRITE, (err) => {
     if (err) return console.error(err.message);
+  })
+  const date = Math.floor(+ new Date() / 1000);
+  const { user_id, post_id } = req.body;
+
+  db.all("SELECT * FROM reposts WHERE user_id = ? AND post_id = ?", [user_id, post_id], (err, rows) => {
+    if (err) return res.status(500).send("Server Error");
+
+    if (rows.length === 0) {
+      db.run("INSERT INTO reposts (user_id, post_id, date_reposted) VALUES(?, ?, ?)", [user_id, post_id, date], (err) => {
+        if (err) return res.status(500).send("Server Error");
+         db.all("SELECT num_reposts FROM posts WHERE id = ?", [post_id], (err, repostsRow) => {
+          if (err) return res.status(500).send("Server Error");
+          
+          const reposts = repostsRow[0].num_reposts;
+          
+          db.run("UPDATE posts SET num_reposts = ? WHERE id = ?", [reposts + 1, post_id], (err) => {
+            if (err) return res.status(500).send("Server Error");
+
+            res.send("Success");
+          })
+        })
+      })    
+    } else {
+      db.run("DELETE FROM reposts WHERE user_id = ? AND post_id = ?", [user_id, post_id], (err) => {
+        if (err) return res.status(500).send("Server Error");
+
+        db.all("SELECT num_reposts FROM posts WHERE id = ?", [post_id], (err, repostsRow) => {
+          if (err) return res.status(500).send("Server Error");
+
+          const reposts = repostsRow[0].num_reposts;
+
+          db.run("UPDATE posts SET num_reposts = ? WHERE id = ?", [reposts - 1, post_id], (err) => {
+            if (err) return res.status(500).send("Server Error");
+
+            res.send("Success");
+          })
+        })
+      })       
+    }
   })
   
   db.close((err) => {
@@ -207,15 +257,6 @@ router.post("/downvote", (req, res) => {
     if (err) return console.error(err)
   })
 });
-
-
-router.post("/downvote", (req, res) => {
-  const db = new sqlite3.Database("./database/bitter.db", sqlite3.OPEN_READWRITE, (err) => {
-    if (err) return console.error(err.message);
-  })
-
-});
-
 
 
 module.exports = router;

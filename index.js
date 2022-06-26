@@ -26,20 +26,22 @@ require("./util/passportConfig")(passport);
 
 app.use("/images", express.static("images"))
 
+
+
 // Routes
 app.get("/", (req, res) => {
   const db = new sqlite3.Database("./database/bitter.db", sqlite3.OPEN_READWRITE, (err) => {
     if (err) return console.error(err.message);
   })
-
+  
   db.all("SELECT posts.id, text, media, media_content_type, date_post_created, num_comments, num_upvotes, num_downvotes, num_reposts, username, profile_photo FROM posts JOIN users ON users.id = posts.poster_id ORDER BY posts.date_post_created DESC LIMIT 30", [], (err, rows) => {
     if (err) return res.status(500).json(err);
     const posts = rows.map(row => {
-     return {...row, media: url + row.media, profile_photo: url + row.profile_photo};
+      return {...row, media: url + row.media, profile_photo: url + row.profile_photo};
     })
     res.send(posts)
   })
-
+  
   db.close((err) => {
     if (err) return console.error(err)
   })
@@ -52,7 +54,7 @@ app.post("/register", async (req, res) => {
   const db = new sqlite3.Database("./database/bitter.db", sqlite3.OPEN_READWRITE, (err) => {
     if (err) return console.error(err.message);
   })
-
+  
   db.all("SELECT * FROM users WHERE username = ?", [username], (err, row) => {
     if (err) console.log(err);
     if (err)  return res.status(500).send("Server Error");
@@ -72,23 +74,23 @@ app.post("/register", async (req, res) => {
       console.log(err);
       return res.status(500).send("Server Error");
     }
-
+    
     res.status(201).send("Account Created");
   })
-
+  
   db.close((err) => {
     if (err) return console.error(err)
   })
 })
-  
+
 
 app.post("/login", passport.authenticate("local"), (req, res) => {
   res.status(200).send(req.user);
 })
 
- 
-app.post("/logout", (req, res) => {
 
+app.post("/logout", (req, res) => {
+  
   // Won't work without a callback function
   req.logout(() => {});
   res.status(200).send("Success");
@@ -104,5 +106,6 @@ app.use("/user", userRouter)
 
 const commentRouter = require("./routes/comment");
 app.use("/comment", commentRouter)
+
 
 app.listen(PORT, () => console.log(`Server listening on port ${PORT}`))

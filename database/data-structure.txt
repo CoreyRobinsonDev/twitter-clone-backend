@@ -45,26 +45,32 @@ comment_section
 
 
 bookmarks
-  user_id INTEGER
-  post_id INTEGER
+  user_id INTEGER NOT NULL
+  post_id INTEGER NOT NULL
 
   FOREIGN KEY(user_id) REFERENCES users(id)
   FOREIGN KEY(post_id) REFERENCES posts(id)
 
 upvotes
-  user_id INTEGER
-  post_id INTEGER
+  user_id INTEGER NOT NULL
+  post_id INTEGER NOT NULL
 
   FOREIGN KEY(user_id) REFERENCES users(id)
   FOREIGN KEY(post_id) REFERENCES posts(id)
 
 downvotes
-  user_id INTEGER
-  post_id INTEGER
+  user_id INTEGER NOT NULL
+  post_id INTEGER NOT NULL
 
   FOREIGN KEY(user_id) REFERENCES users(id)
   FOREIGN KEY(post_id) REFERENCES posts(id)
 
+reposts
+  user_id INTEGER NOT NULL
+  post_id INTEGER NOT NULL
+
+  FOREIGN KEY(user_id) REFERENCES users(id)
+  FOREIGN KEY(post_id) REFERENCES posts(id)
 notifications
 
 

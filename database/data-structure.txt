@@ -31,13 +31,13 @@ posts
 
 comment_section
   id INTEGER
-  poster_id INTEGER
-  post_id INTEGER
+  poster_id INTEGER NOT NULL
+  post_id INTEGER NOT NULL
   text TEXT
   media TEXT
-  num_upvotes INTEGER
-  num_downvotes INTEGER
-  num_reposts INTEGER
+  num_upvotes INTEGER NOT NULL
+  num_downvotes INTEGER NOT NULL
+  num_reposts INTEGER NOT NULL
 
   PRIMARY KEY(id)
   FOREIGN KEY(poster_id) REFERENCES users(id)

@@ -259,4 +259,51 @@ router.post("/downvote", (req, res) => {
 });
 
 
+
+
+
+router.post("/getAllPostInteractions", (req, res) => {
+  const db = new sqlite3.Database("./database/bitter.db", sqlite3.OPEN_READWRITE, (err) => {
+    if (err) return console.error(err.message);
+  })
+
+  const { id } = req.body;
+  const data = {
+    reposts: [],
+    upvotes: [],
+    downvotes: [],
+    bookmarks: []
+  }
+
+
+  db.all("SELECT post_id FROM reposts WHERE user_id = ?", [id], (err, reposts) => {
+    if (err) return res.status(500).send("Server Error");
+
+    data.reposts = reposts.map(repost => repost.post_id)     
+
+    db.all("SELECT post_id FROM upvotes WHERE user_id = ?", [id], (err, upvotes) => {
+      if (err) return res.status(500).send("Server Error");
+
+      data.upvotes = upvotes.map(upvote => upvote.post_id);     
+      
+      db.all("SELECT post_id FROM downvotes WHERE user_id = ?", [id], (err, downvotes) => {
+        if (err) return res.status(500).send("Server Error");
+
+        data.downvotes = downvotes.map(downvote => downvote.post_id);
+        
+        db.all("SELECT post_id FROM bookmarks WHERE user_id = ?", [id], (err, bookmarks) => {
+          if (err) return res.status(500).send("Server Error");
+
+          data.bookmarks = bookmarks.map(bookmark => bookmark.post_id);
+          res.send(data);
+        })
+      })
+    })
+  })
+
+  db.close((err) => {
+    if (err) return console.error(err)
+  })
+}) 
+
 module.exports = router;

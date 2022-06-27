@@ -259,7 +259,35 @@ router.post("/downvote", (req, res) => {
 });
 
 
+router.post("/bookmark", (req, res) => {
+  const db = new sqlite3.Database("./database/bitter.db", sqlite3.OPEN_READWRITE, (err) => {
+    if (err) return console.error(err.message);
+  })
 
+  const { user_id, post_id } = req.body;
+
+  db.all("SELECT * FROM bookmarks WHERE user_id = ? AND post_id = ?", [user_id, post_id], (err, row) => {
+    if (err) return res.status(500).send("Server Error");
+
+    if (row.length === 0) {
+      db.run("INSERT INTO bookmarks (user_id, post_id) VALUES(?, ?)", [user_id, post_id], (err) => {
+        if (err) return res.status(500).send("Server Error");
+
+        res.send("Success")
+      })
+    } else {
+      db.run("DELETE FROM bookmarks WHERE user_id = ? AND post_id = ?", [user_id, post_id], (err) => {
+        if (err) return res.status(500).send("Server Error");
+        res.send("Success");
+      })
+    }
+  })
+
+  db.close((err) => {
+    if (err) return console.error(err)
+  })
+
+})
 
 
 router.post("/getAllPostInteractions", (req, res) => {

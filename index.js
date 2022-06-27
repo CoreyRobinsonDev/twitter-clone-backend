@@ -34,7 +34,7 @@ app.get("/", (req, res) => {
     if (err) return console.error(err.message);
   })
   
-  db.all("SELECT posts.id, text, media, media_content_type, date_post_created, num_comments, num_upvotes, num_downvotes, num_reposts, username, profile_photo FROM posts JOIN users ON users.id = posts.poster_id ORDER BY posts.date_post_created DESC LIMIT 30", [], (err, rows) => {
+  db.all("SELECT posts.id, poster_id, text, media, media_content_type, date_post_created, num_comments, num_upvotes, num_downvotes, num_reposts, username, profile_photo FROM posts JOIN users ON users.id = posts.poster_id ORDER BY posts.date_post_created DESC LIMIT 30", [], (err, rows) => {
     if (err) return res.status(500).json(err);
     const posts = rows.map(row => {
       return {...row, media: url + row.media, profile_photo: url + row.profile_photo};

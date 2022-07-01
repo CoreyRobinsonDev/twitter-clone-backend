@@ -87,13 +87,14 @@ router.post("/repost", (req, res) => {
     if (err) return console.error(err.message);
   })
 
+  const date = Math.floor(+ new Date() / 1000);
   const { user_id, comment_id } = req.body;
 
   db.all("SELECT * FROM reposts WHERE user_id = ? AND comment_id = ?", [user_id, comment_id], (err, rows) => {
     if (err) return res.status(500).send("Server Error");
 
     if (rows.length === 0) {
-      db.run("INSERT INTO reposts (user_id, comment_id) VALUES(?, ?)", [user_id, comment_id], (err) => {
+      db.run("INSERT INTO reposts (user_id, comment_id, date_reposted) VALUES(?, ?, ?)", [user_id, comment_id, date], (err) => {
         if (err) return res.status(500).send("Server Error");
          db.all("SELECT num_reposts FROM comment_section WHERE id = ?", [comment_id], (err, repostsRow) => {
           if (err) return res.status(500).send("Server Error");

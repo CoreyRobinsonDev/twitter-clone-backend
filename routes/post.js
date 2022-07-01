@@ -78,7 +78,91 @@ router.post("/getPostData", (req, res) => {
         return {...row, media: url + row.media, profile_photo: url + row.profile_photo};
       })
       
-      res.send(post)
+      res.send(post);
+  })
+
+  db.close((err) => {
+    if (err) return console.error(err)
+  })
+})
+
+
+router.get("/getUserPosts", async (req, res) => {
+  const db = new sqlite3.Database("./database/bitter.db", sqlite3.OPEN_READWRITE, (err) => {
+    if (err) return console.error(err.message);
+  })
+  const { id } = req.user;
+  const posts = [];
+
+  db.all("SELECT * FROM posts WHERE poster_id = ?", [id], (err, rows) => {
+    if (err) return res.status(500).send("Server Error");
+
+    posts.push(...rows);
+
+    db.all("SELECT * FROM reposts WHERE user_id = ?", [id], (err, reposts) => {
+      if (err) return res.status(500).send("Server Error");
+
+      posts.push(...reposts);
+
+      posts.sort((a, b) => new Date(b.date_post_created ? b.date_post_created : b.date_reposted) - new Date(a.date_post_created ? a.date_post_created : a.date_reposted));
+      
+      const repostedPostIds = [];
+      const repostedCommentIds = [];
+
+      for (let i = 0; i < posts.length; i++) {
+        if (posts[i].post_id) {
+          repostedPostIds.push(posts[i].post_id);
+        } else if (posts[i].comment_id) {
+          repostedCommentIds.push(posts[i].comment_id);
+        }
+      }
+
+      db.all("SELECT * FROM posts", [], (err, allPosts) => {
+        if (err) return res.status(500).send("Server Error");
+
+        for (const id of repostedPostIds) {
+            const repostedPost = allPosts.find(obj => obj.id === id);
+            posts.push({...repostedPost, repost: true});
+        }
+
+        db.all("SELECT * FROM comment_section", [], (err, allComments) => {
+          if (err) return res.status(500).send("Server Error");
+
+          for (const id of repostedCommentIds) {
+            const repostedComment = allComments.find(obj => obj.id === id);
+            posts.push({...repostedComment, repost: true});
+          }
+          
+          for (let i = 0; i < posts.length; i++) {
+            if (posts[i].post_id) {
+              const index = i;
+              for (let j = 0; j < posts.length; j++) {
+                if (posts[j].id === posts[i].post_id && posts[j]?.repost) {
+                  const newIndex = j;
+                  posts.splice(index, 1, posts[newIndex]);
+                  posts.splice(newIndex, 1);
+                  break;
+                }
+              }
+            } else if (posts[i].comment_id) {
+              const index = i;
+
+              for (let j = 0; j < posts.length; j++) {
+                // the last condition checks if a key that only exists on post objects isn't present to prevent collisions of post and comment ids
+                if (posts[j].id === posts[i].comment_id && posts[j]?.repost && typeof posts[j].media_content_type === "undefined") {
+                  const newIndex = j;
+                  posts.splice(index, 1, posts[newIndex]);
+                  posts.splice(newIndex, 1);
+                  break;
+                }
+              }
+            }
+          }
+          res.send(posts)
+        })
+      })
+      
+    })
   })
 
   db.close((err) => {

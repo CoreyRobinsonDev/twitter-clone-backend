@@ -62,7 +62,7 @@ router.post("/", upload.single("file"), (req, res) => {
 });
 
 
-router.post("/getCommentData", (req, res) => {
+router.post("/getCommentSection", (req, res) => {
   const db = new sqlite3.Database("./database/bitter.db", sqlite3.OPEN_READWRITE, (err) => {
     if (err) return console.error(err.message);
   })
@@ -71,7 +71,7 @@ router.post("/getCommentData", (req, res) => {
   db.all("SELECT * FROM comment_section WHERE post_id = ?", [post_id], (err, rows) => {
     if (err) return res.status(500).send("Server Error");
 
-    rows.forEach(row => row.media ? row.media = url + row.media : null);
+    rows.forEach(row => row.media ? row.media = url + row.media : "");
     
     res.send(rows);
   })
@@ -87,20 +87,20 @@ router.post("/repost", (req, res) => {
     if (err) return console.error(err.message);
   })
 
-  const { user_id, post_id } = req.body;
+  const { user_id, comment_id } = req.body;
 
-  db.all("SELECT * FROM reposts WHERE user_id = ? AND post_id = ?", [user_id, post_id], (err, rows) => {
+  db.all("SELECT * FROM reposts WHERE user_id = ? AND comment_id = ?", [user_id, comment_id], (err, rows) => {
     if (err) return res.status(500).send("Server Error");
 
     if (rows.length === 0) {
-      db.run("INSERT INTO reposts (user_id, post_id) VALUES(?, ?)", [user_id, post_id], (err) => {
+      db.run("INSERT INTO reposts (user_id, comment_id) VALUES(?, ?)", [user_id, comment_id], (err) => {
         if (err) return res.status(500).send("Server Error");
-         db.all("SELECT num_reposts FROM posts WHERE id = ?", [post_id], (err, repostsRow) => {
+         db.all("SELECT num_reposts FROM comment_section WHERE id = ?", [comment_id], (err, repostsRow) => {
           if (err) return res.status(500).send("Server Error");
           
           const reposts = repostsRow[0].num_reposts;
           
-          db.run("UPDATE posts SET num_reposts = ? WHERE id = ?", [reposts + 1, post_id], (err) => {
+          db.run("UPDATE comment_section SET num_reposts = ? WHERE id = ?", [reposts + 1, comment_id], (err) => {
             if (err) return res.status(500).send("Server Error");
 
             res.send("Success");
@@ -108,15 +108,15 @@ router.post("/repost", (req, res) => {
         })
       })    
     } else {
-      db.run("DELETE FROM reposts WHERE user_id = ? AND post_id = ?", [user_id, post_id], (err) => {
+      db.run("DELETE FROM reposts WHERE user_id = ? AND comment_id = ?", [user_id, comment_id], (err) => {
         if (err) return res.status(500).send("Server Error");
 
-        db.all("SELECT num_reposts FROM posts WHERE id = ?", [post_id], (err, repostsRow) => {
+        db.all("SELECT num_reposts FROM comment_section WHERE id = ?", [comment_id], (err, repostsRow) => {
           if (err) return res.status(500).send("Server Error");
 
           const reposts = repostsRow[0].num_reposts;
 
-          db.run("UPDATE posts SET num_reposts = ? WHERE id = ?", [reposts - 1, post_id], (err) => {
+          db.run("UPDATE comment_section SET num_reposts = ? WHERE id = ?", [reposts - 1, comment_id], (err) => {
             if (err) return res.status(500).send("Server Error");
 
             res.send("Success");
@@ -137,26 +137,26 @@ router.post("/upvote", (req, res) => {
     if (err) return console.error(err.message);
   })
 
-  const { user_id, post_id } = req.body;
+  const { user_id, comment_id } = req.body;
 
-  db.all("SELECT * FROM upvotes WHERE user_id = ? AND post_id = ?", [user_id, post_id], (err, rows) => {
+  db.all("SELECT * FROM upvotes WHERE user_id = ? AND comment_id = ?", [user_id, comment_id], (err, rows) => {
     if (err) return res.status(500).send("Server Error");
 
     if (rows.length === 0) {
-      db.all("SELECT * FROM downvotes WHERE user_id = ? AND post_id = ?", [user_id, post_id], (err, result) => {
+      db.all("SELECT * FROM downvotes WHERE user_id = ? AND comment_id = ?", [user_id, comment_id], (err, result) => {
       if (err) return res.status(500).send("Server Error");
 
         if (result.length === 0) {
 
-          db.run("INSERT INTO upvotes (user_id, post_id) VALUES(?, ?)", [user_id, post_id], (err) => {
+          db.run("INSERT INTO upvotes (user_id, comment_id) VALUES(?, ?)", [user_id, comment_id], (err) => {
             if (err) return res.status(500).send("Server Error");
             
-            db.all("SELECT num_upvotes FROM posts WHERE id = ?", [post_id], (err, upvoteRows) => {
+            db.all("SELECT num_upvotes FROM comment_section WHERE id = ?", [comment_id], (err, upvoteRows) => {
               if (err) return res.status(500).send("Server Error");
               
               const upvotes = upvoteRows[0].num_upvotes;
           
-              db.run("UPDATE posts SET num_upvotes = ? WHERE id = ?", [upvotes + 1, post_id], (err) => {
+              db.run("UPDATE comment_section SET num_upvotes = ? WHERE id = ?", [upvotes + 1, comment_id], (err) => {
                 if (err) return res.status(500).send("Server Error");
             
                 res.send(true)
@@ -168,15 +168,15 @@ router.post("/upvote", (req, res) => {
         }
       })
     } else {
-      db.run("DELETE FROM upvotes WHERE user_id = ? AND post_id = ?", [user_id, post_id], (err) => {
+      db.run("DELETE FROM upvotes WHERE user_id = ? AND comment_id = ?", [user_id, comment_id], (err) => {
         if (err) return res.status(500).send("Server Error");
         
-        db.all("SELECT num_upvotes FROM posts WHERE id = ?", [post_id], (err, upvoteRows) => {
+        db.all("SELECT num_upvotes FROM comment_section WHERE id = ?", [comment_id], (err, upvoteRows) => {
           if (err) return res.status(500).send("Server Error");
 
           const upvotes = upvoteRows[0].num_upvotes;
           
-          db.run("UPDATE posts SET num_upvotes = ? WHERE id = ?", [upvotes - 1, post_id], (err) => {
+          db.run("UPDATE comment_section SET num_upvotes = ? WHERE id = ?", [upvotes - 1, comment_id], (err) => {
             if (err) return res.status(500).send("Server Error");
             
             res.send(false)
@@ -198,26 +198,26 @@ router.post("/downvote", (req, res) => {
     if (err) return console.error(err.message);
   })
 
-  const { user_id, post_id } = req.body;
+  const { user_id, comment_id } = req.body;
 
-  db.all("SELECT * FROM downvotes WHERE user_id = ? AND post_id = ?", [user_id, post_id], (err, rows) => {
+  db.all("SELECT * FROM downvotes WHERE user_id = ? AND comment_id = ?", [user_id, comment_id], (err, rows) => {
     if (err) return res.status(500).send("Server Error");
 
     if (rows.length === 0) {
-      db.all("SELECT * FROM upvotes WHERE user_id = ? AND post_id = ?", [user_id, post_id], (err, result) => {
+      db.all("SELECT * FROM upvotes WHERE user_id = ? AND comment_id = ?", [user_id, comment_id], (err, result) => {
         if (err) return res.status(500).send("Server Error");
 
         if (result.length === 0) {
 
-          db.run("INSERT INTO downvotes (user_id, post_id) VALUES(?, ?)", [user_id, post_id], (err) => {
+          db.run("INSERT INTO downvotes (user_id, comment_id) VALUES(?, ?)", [user_id, comment_id], (err) => {
             if (err) return res.status(500).send("Server Error");
         
-            db.all("SELECT num_downvotes FROM posts WHERE id = ?", [post_id], (err, downvoteRows) => {
+            db.all("SELECT num_downvotes FROM comment_section WHERE id = ?", [comment_id], (err, downvoteRows) => {
               if (err) return res.status(500).send("Server Error");
 
               const downvotes = downvoteRows[0].num_downvotes;
 
-              db.run("UPDATE posts SET num_downvotes = ? WHERE id = ?", [downvotes + 1, post_id], (err) => {
+              db.run("UPDATE comment_section SET num_downvotes = ? WHERE id = ?", [downvotes + 1, comment_id], (err) => {
                 if (err) return res.status(500).send("Server Error");
             
                 res.send(true)
@@ -229,15 +229,15 @@ router.post("/downvote", (req, res) => {
         }
       })
     } else {
-      db.run("DELETE FROM downvotes WHERE user_id = ? AND post_id = ?", [user_id, post_id], (err) => {
+      db.run("DELETE FROM downvotes WHERE user_id = ? AND comment_id = ?", [user_id, comment_id], (err) => {
         if (err) return res.status(500).send("Server Error");
         
-        db.all("SELECT num_downvotes FROM posts WHERE id = ?", [post_id], (err, downvoteRows) => {
+        db.all("SELECT num_downvotes FROM comment_section WHERE id = ?", [comment_id], (err, downvoteRows) => {
           if (err) return res.status(500).send("Server Error");
 
           const downvotes = downvoteRows[0].num_downvotes;
 
-          db.run("UPDATE posts SET num_downvotes = ? WHERE id = ?", [downvotes - 1, post_id], (err) => {
+          db.run("UPDATE comment_section SET num_downvotes = ? WHERE id = ?", [downvotes - 1, comment_id], (err) => {
             if (err) return res.status(500).send("Server Error");
             
             res.send(false)
@@ -252,5 +252,65 @@ router.post("/downvote", (req, res) => {
     if (err) return console.error(err)
   })
 });
+
+
+router.post("/getCommentData", (req, res) => {
+  const db = new sqlite3.Database("./database/bitter.db", sqlite3.OPEN_READWRITE, (err) => {
+    if (err) return console.error(err.message);
+  })
+
+  const { id } = req.body;
+
+  db.all("SELECT * FROM comment_section WHERE id = ?", [id], (err, row) => {
+    if (err) return res.status(500).send("Server Error");
+    if (row.length === 0) return res.send("No Comments");
+
+    row[0].media = url + row[0].media;    
+
+    res.send(row)
+  })
+
+  db.close((err) => {
+    if (err) return console.error(err)
+  })
+})
+
+router.post("/getAllCommentInteractions", (req, res) => {
+  const db = new sqlite3.Database("./database/bitter.db", sqlite3.OPEN_READWRITE, (err) => {
+    if (err) return console.error(err.message);
+  })
+
+  const { id } = req.body;
+  const data = {
+    reposts: [],
+    upvotes: [],
+    downvotes: []
+  }
+
+
+  db.all("SELECT comment_id FROM reposts WHERE user_id = ?", [id], (err, reposts) => {
+    if (err) return res.status(500).send("Server Error");
+
+    data.reposts = reposts.map(repost => repost.comment_id)     
+
+    db.all("SELECT comment_id FROM upvotes WHERE user_id = ?", [id], (err, upvotes) => {
+      if (err) return res.status(500).send("Server Error");
+
+      data.upvotes = upvotes.map(upvote => upvote.comment_id);     
+      
+      db.all("SELECT comment_id FROM downvotes WHERE user_id = ?", [id], (err, downvotes) => {
+        if (err) return res.status(500).send("Server Error");
+
+        data.downvotes = downvotes.map(downvote => downvote.comment_id);
+        
+        res.send(data);
+      })
+    })
+  })
+
+  db.close((err) => {
+    if (err) return console.error(err)
+  })
+}) 
 
 module.exports = router;

@@ -77,7 +77,7 @@ router.post("/getPostData", (req, res) => {
       const post = rows.map(row => {
         return {...row, media: url + row.media, profile_photo: url + row.profile_photo};
       })
-  
+      
       res.send(post)
   })
 
@@ -156,7 +156,7 @@ router.post("/upvote", (req, res) => {
           db.run("INSERT INTO upvotes (user_id, post_id) VALUES(?, ?)", [user_id, post_id], (err) => {
             if (err) return res.status(500).send("Server Error");
             
-            db.all("SELECT num_upvotes FROM posts WHERE id = ?", [post_id], (err, upvoteRows) => {
+            db.all("SELECT * FROM posts WHERE id = ?", [post_id], (err, upvoteRows) => {
               if (err) return res.status(500).send("Server Error");
               
               const upvotes = upvoteRows[0].num_upvotes;

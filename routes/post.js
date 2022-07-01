@@ -87,14 +87,14 @@ router.post("/getPostData", (req, res) => {
 })
 
 
-router.get("/getUserPosts", async (req, res) => {
+router.post("/getUserPosts", async (req, res) => {
   const db = new sqlite3.Database("./database/bitter.db", sqlite3.OPEN_READWRITE, (err) => {
     if (err) return console.error(err.message);
   })
-  const { id } = req.user;
+  const { id } = req.body;
   const posts = [];
 
-  db.all("SELECT * FROM posts WHERE poster_id = ?", [id], (err, rows) => {
+  db.all("SELECT posts.id, text, media, media_content_type, date_post_created, num_comments, num_upvotes, num_downvotes, num_reposts, username, profile_photo FROM posts JOIN users ON users.id = posts.poster_id WHERE posts.poster_id = ?", [id], (err, rows) => {
     if (err) return res.status(500).send("Server Error");
 
     posts.push(...rows);
@@ -117,7 +117,7 @@ router.get("/getUserPosts", async (req, res) => {
         }
       }
 
-      db.all("SELECT * FROM posts", [], (err, allPosts) => {
+      db.all("SELECT posts.id, text, media, media_content_type, date_post_created, num_comments, num_upvotes, num_downvotes, num_reposts, username, profile_photo FROM posts JOIN users ON users.id = posts.poster_id", [], (err, allPosts) => {
         if (err) return res.status(500).send("Server Error");
 
         for (const id of repostedPostIds) {
@@ -125,7 +125,7 @@ router.get("/getUserPosts", async (req, res) => {
             posts.push({...repostedPost, repost: true});
         }
 
-        db.all("SELECT * FROM comment_section", [], (err, allComments) => {
+        db.all("SELECT comment_section.id, text, media, num_reposts, num_upvotes, num_downvotes, username, profile_photo FROM comment_section JOIN users ON users.id = comment_section.poster_id", [], (err, allComments) => {
           if (err) return res.status(500).send("Server Error");
 
           for (const id of repostedCommentIds) {
@@ -158,7 +158,8 @@ router.get("/getUserPosts", async (req, res) => {
               }
             }
           }
-          res.send(posts)
+          const newPosts = posts.map(post => {return{ ...post, media: url + post.media, profile_photo: url + post.profile_photo }});
+          res.send(newPosts)
         })
       })
       

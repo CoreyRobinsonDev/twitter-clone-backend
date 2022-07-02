@@ -102,10 +102,13 @@ const postRouter = require("./routes/post");
 app.use("/post", postRouter);
 
 const userRouter = require("./routes/user");
-app.use("/user", userRouter)
+app.use("/user", userRouter);
 
 const commentRouter = require("./routes/comment");
-app.use("/comment", commentRouter)
+app.use("/comment", commentRouter);
+
+const bookmarkRouter = require("./routes/bookmark");
+app.use("/bookmark", bookmarkRouter);
 
 
-app.listen(PORT, () => console.log(`Server listening on port ${PORT}`))
+app.listen(PORT, () => console.log(`Server listening on port ${PORT}`));

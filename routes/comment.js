@@ -68,12 +68,12 @@ router.post("/getCommentSection", (req, res) => {
   })
   const { post_id } = req.body;
 
-  db.all("SELECT * FROM comment_section WHERE post_id = ?", [post_id], (err, rows) => {
+  db.all("SELECT comment_section.id, text, media, num_reposts, num_upvotes, num_downvotes, poster_id, post_id, username, profile_photo FROM comment_section JOIN users ON comment_section.poster_id = users.id WHERE post_id = ?", [post_id], (err, rows) => {
     if (err) return res.status(500).send("Server Error");
 
-    rows.forEach(row => row.media ? row.media = url + row.media : "");
+    const comments = rows.map(row => ({...row, media: url + row.media, profile_photo: url + row.profile_photo}));
     
-    res.send(rows);
+    res.send(comments);
   })
 
   db.close((err) => {
@@ -259,16 +259,16 @@ router.post("/getCommentData", (req, res) => {
   const db = new sqlite3.Database("./database/bitter.db", sqlite3.OPEN_READWRITE, (err) => {
     if (err) return console.error(err.message);
   })
-
   const { id } = req.body;
-
-  db.all("SELECT * FROM comment_section WHERE id = ?", [id], (err, row) => {
-    if (err) return res.status(500).send("Server Error");
-    if (row.length === 0) return res.send("No Comments");
-
-    row[0].media = url + row[0].media;    
-
-    res.send(row)
+ 
+    db.all("SELECT comment_section.id, text, media, num_upvotes, num_downvotes, num_reposts, username, profile_photo FROM comment_section JOIN users ON users.id = comment_section.poster_id WHERE comment_section.id = ?", [id], (err, rows) => {
+    if (err) return res.status(500).json(err);
+    
+      const comment = rows.map(row => {
+        return {...row, media: url + row.media, profile_photo: url + row.profile_photo};
+      })
+      
+      res.send(comment);
   })
 
   db.close((err) => {

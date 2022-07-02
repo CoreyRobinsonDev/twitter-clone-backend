@@ -5,7 +5,6 @@ const path = require("path");
 const multer = require("multer");
 const url = "http://localhost:4001/";
 
-
 // Multer Config
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -94,7 +93,7 @@ router.post("/getUserPosts", async (req, res) => {
   const { id } = req.body;
   const posts = [];
 
-  db.all("SELECT posts.id, text, media, media_content_type, date_post_created, num_comments, num_upvotes, num_downvotes, num_reposts, username, profile_photo FROM posts JOIN users ON users.id = posts.poster_id WHERE posts.poster_id = ?", [id], (err, rows) => {
+  db.all("SELECT posts.id, poster_id, text, media, media_content_type, date_post_created, num_comments, num_upvotes, num_downvotes, num_reposts, username, profile_photo FROM posts JOIN users ON users.id = posts.poster_id WHERE posts.poster_id = ?", [id], (err, rows) => {
     if (err) return res.status(500).send("Server Error");
 
     posts.push(...rows);
@@ -117,7 +116,7 @@ router.post("/getUserPosts", async (req, res) => {
         }
       }
 
-      db.all("SELECT posts.id, text, media, media_content_type, date_post_created, num_comments, num_upvotes, num_downvotes, num_reposts, username, profile_photo FROM posts JOIN users ON users.id = posts.poster_id", [], (err, allPosts) => {
+      db.all("SELECT posts.id, poster_id, text, media, media_content_type, date_post_created, num_comments, num_upvotes, num_downvotes, num_reposts, username, profile_photo FROM posts JOIN users ON users.id = posts.poster_id", [], (err, allPosts) => {
         if (err) return res.status(500).send("Server Error");
 
         for (const id of repostedPostIds) {
@@ -125,7 +124,7 @@ router.post("/getUserPosts", async (req, res) => {
             posts.push({...repostedPost, repost: true});
         }
 
-        db.all("SELECT comment_section.id, text, media, num_reposts, num_upvotes, num_downvotes, username, profile_photo FROM comment_section JOIN users ON users.id = comment_section.poster_id", [], (err, allComments) => {
+        db.all("SELECT comment_section.id, poster_id, text, media, num_reposts, num_upvotes, num_downvotes, username, profile_photo FROM comment_section JOIN users ON users.id = comment_section.poster_id", [], (err, allComments) => {
           if (err) return res.status(500).send("Server Error");
 
           for (const id of repostedCommentIds) {
@@ -418,5 +417,6 @@ router.post("/getAllPostInteractions", (req, res) => {
     if (err) return console.error(err)
   })
 }) 
+
 
 module.exports = router;

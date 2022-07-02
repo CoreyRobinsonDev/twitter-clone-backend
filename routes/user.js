@@ -8,26 +8,6 @@ router.get("/", (req, res) => {
   if (user) res.send({...user, profile_photo: url + user.profile_photo, banner_photo: url + user.banner_photo});
 })
 
-router.post("/getUserData", (req, res) => {
-  const db = new sqlite3.Database("./database/bitter.db", sqlite3.OPEN_READWRITE, (err) => {
-    if (err) return console.error(err.message);
-  })
-  
-  const { user_id } = req.body;
-
-  db.all("SELECT username, profile_photo FROM users WHERE id = ?", [user_id], (err, rows) => {
-    if (err) return res.status(500).send("Server Error");
-
-    rows[0].profile_photo = url + rows[0].profile_photo;
-    
-    res.send(rows[0]);
-  })
-
-  
-  db.close((err) => {
-    if (err) return console.error(err)
-  })
-})
 
 router.post("/getAllUserData", (req, res) => {
   const db = new sqlite3.Database("./database/bitter.db", sqlite3.OPEN_READWRITE, (err) => {

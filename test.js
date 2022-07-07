@@ -3,8 +3,11 @@ const db = new sqlite3.Database("./database/bitter.db", sqlite3.OPEN_READWRITE, 
   if (err) return console.error(err.message);
 })
 
-db.run("CREATE TABLE reposts (user_id INTEGER NOT NULL, post_id INTEGER, comment_id INTEGER, date_reposted NUMERIC NOT NULL, FOREIGN KEY(user_id) REFERENCES users(id), FOREIGN KEY(post_id) REFERENCES posts(id), FOREIGN KEY(comment_id) REFERENCES comment_section(id))", [], (err) => {
-  if (err) return console.error(err)
+db.all("SELECT * FROM followers", [], (err, rows) => {
+  if (err) console.error(err);
+
+  rows.forEach(row => console.log(row));
+
 })
 
 db.close((err) => {

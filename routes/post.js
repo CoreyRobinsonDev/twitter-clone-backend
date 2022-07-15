@@ -77,7 +77,7 @@ router.post("/getPostData", (req, res) => {
         return {...row, media: url + row.media, profile_photo: url + row.profile_photo};
       })
       
-      res.send(post);
+      res.send(post[0]);
   })
 
   db.close((err) => {
@@ -417,6 +417,28 @@ router.post("/getAllPostInteractions", (req, res) => {
     if (err) return console.error(err)
   })
 }) 
+
+
+router.post("/getIdByText", (req, res) => {
+  const db = new sqlite3.Database("./database/bitter.db", sqlite3.OPEN_READWRITE, (err) => {
+    if (err) return console.error(err.message);
+  })
+  const { text } = req.body;
+
+  if (text.length === 0) return res.send("Empty String");
+
+  db.all("SELECT id FROM posts WHERE text LIKE ?", [`%${text}%`], (err, rows) => {
+    if (err) return res.status(500).send("Server Error");
+
+    const ids = rows.map(row => row.id);
+    console.log(ids)
+    res.send(ids)
+  })
+  db.close((err) => {
+    if (err) return console.error(err)
+  })
+})
+
 
 
 module.exports = router;

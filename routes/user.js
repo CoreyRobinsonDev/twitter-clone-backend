@@ -146,4 +146,26 @@ router.post("/getFollowing", (req, res) => {
     if (err) return console.error(err)
   })
 })
+
+
+router.post("/getIdByUsername", (req, res) => {
+  const db = new sqlite3.Database("./database/bitter.db", sqlite3.OPEN_READWRITE, (err) => {
+    if (err) return console.error(err.message);
+  })
+  const { username } = req.body;
+
+  db.all("SELECT id FROM users WHERE username LIKE ?", [`%${username}%`], (err, rows) => {
+    if (err) return res.status(500).send("Server Error");
+
+    const ids = rows.map(row => row.id);
+    console.log(ids)
+    res.send(ids);
+  })
+
+  db.close((err) => {
+    if (err) return console.error(err)
+  })
+})
+
+
 module.exports = router;

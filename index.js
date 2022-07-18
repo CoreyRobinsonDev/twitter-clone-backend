@@ -7,12 +7,13 @@ const cookieParser = require("cookie-parser");
 const bcrypt = require("bcrypt");
 const session = require("express-session");
 const url = "http://localhost:4001/";
+require("dotenv").config();
 
 const PORT = process.env.PORT || 4001;
 
 
 // Middleware
-app.use(cors({origin: "http://localhost:3000", credentials: true}))
+app.use(cors({origin: "https://not-twitter-crd.netlify.app"}))
 app.use(express.json());
 app.use(session({
   secret: "secretcode",

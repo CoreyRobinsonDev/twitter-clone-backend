@@ -70,7 +70,7 @@ router.post("/getPostData", (req, res) => {
   })
   const { id } = req.body;
  
-    db.all("SELECT posts.id, text, media, media_content_type, date_post_created, num_comments, num_upvotes, num_downvotes, num_reposts, username, profile_photo FROM posts JOIN users ON users.id = posts.poster_id WHERE posts.id = ?", [id], (err, rows) => {
+    db.all("SELECT posts.id, poster_id, text, media, media_content_type, date_post_created, num_comments, num_upvotes, num_downvotes, num_reposts, username, profile_photo FROM posts JOIN users ON users.id = posts.poster_id WHERE posts.id = ?", [id], (err, rows) => {
     if (err) return res.status(500).json(err);
     
       const post = rows.map(row => {

@@ -6,7 +6,7 @@ const passport = require("passport");
 const cookieParser = require("cookie-parser");
 const bcrypt = require("bcrypt");
 const session = require("express-session");
-const url = "http://localhost:4001/";
+const url = "https://not-twitter-crd.herokuapp.com/";
 require("dotenv").config();
 
 const PORT = process.env.PORT || 4001;

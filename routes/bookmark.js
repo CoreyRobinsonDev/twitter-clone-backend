@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const sqlite3 = require("sqlite3").verbose();
-const url = "http://localhost:4001/";
+const url = "https://not-twitter-crd.herokuapp.com/";
 
 router.get("/", (req, res) => {
   const db = new sqlite3.Database("./database/bitter.db", sqlite3.OPEN_READWRITE, (err) => {

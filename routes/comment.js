@@ -3,7 +3,7 @@ const router = express.Router();
 const sqlite3 = require("sqlite3").verbose();
 const path = require("path");
 const multer = require("multer");
-const url = "http://localhost:4001/";
+const url = "https://not-twitter-crd.herokuapp.com/";
 
 
 // Multer Config

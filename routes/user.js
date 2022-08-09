@@ -4,7 +4,7 @@ const sqlite3 = require("sqlite3").verbose();
 const url = "https://not-twitter-crd.herokuapp.com/";
 
 router.get("/", (req, res) => {
-  const { user } = req;
+  const user = req.user ?? null;
   if (user) res.send({...user, profile_photo: url + user.profile_photo, banner_photo: url + user.banner_photo});
 })
 
